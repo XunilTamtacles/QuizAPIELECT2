@@ -5,7 +5,7 @@
 @adminToken = YOUR_ADMIN_JWT_TOKEN_HERE
 @userToken = YOUR_USER_JWT_TOKEN_HERE
 
----
+
 
 ### LOGIN ADMIN
 POST {{Web_API_Quiz_HostAddress}}/api/auth/login
@@ -17,7 +17,7 @@ X-API-KEY: {{apiKey}}
   "password": "1234567"
 }
 
----
+
 
 ### LOGIN 
 POST {{Web_API_Quiz_HostAddress}}/api/auth/login
