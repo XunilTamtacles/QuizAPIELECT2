@@ -17,9 +17,9 @@ namespace QuizAPIELECT2.Utils
         public string GenerateToken(string username, string role)
         {
             var secretKey = _configuration["Jwt:Key"];
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!)); // removes null reference (!)
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            );
+
 
             var claims = new[]
             {
