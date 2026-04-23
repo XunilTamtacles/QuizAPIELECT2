@@ -4,9 +4,9 @@ using Microsoft.IdentityModel.Tokens;
 using QuizAPIELECT2.Utils;
 using System.Text;
 using System.Threading.RateLimiting;
-using Web_API_Quiz.Utils;
 
-namespace Web_API_Quiz
+
+namespace QuizAPIELECT2
 {
     public class Program
     {

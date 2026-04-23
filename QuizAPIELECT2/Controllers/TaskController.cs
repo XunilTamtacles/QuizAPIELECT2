@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using QuizAPIELECT2.Models;
-using QuizAPIELECT2.Models;
 using static QuizAPIELECT2.Utils.MockDataBase;
 
 
