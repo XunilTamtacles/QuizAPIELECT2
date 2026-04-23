@@ -16,25 +16,24 @@ namespace QuizAPIELECT2.Utils
 
         public string GenerateToken(string username, string role)
         {
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]);
-
-            var credentials = new SigningCredentials(
-                new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256
+            var secretKey = _configuration["Jwt:Key"];
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!)); // removes null reference (!)
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             );
 
             var claims = new[]
             {
+                
                 new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Role, role)
+                new Claim(ClaimTypes.Role, role),
+                new Claim("username", username),
+                new Claim("role", role)
             };
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: credentials
+                expires: DateTime.UtcNow.AddMinutes(5),
+                signingCredentials: creds
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);

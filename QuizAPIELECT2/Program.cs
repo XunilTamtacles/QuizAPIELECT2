@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using QuizAPIELECT2.Utils;
 using System.Text;
 using System.Threading.RateLimiting;
-using System.Security.Claims;
+using Web_API_Quiz.Utils;
 
-namespace QuizAPIELECT2
+namespace Web_API_Quiz
 {
     public class Program
     {
@@ -12,55 +14,96 @@ namespace QuizAPIELECT2
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
-
-            var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
-
+            
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    RoleClaimType = ClaimTypes.Role
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+                    )
+                };
+
+               
+                options.Events = new JwtBearerEvents
+                {
+                    OnChallenge = async context =>
+                    {
+                        context.HandleResponse();
+
+                        context.Response.StatusCode = 401;
+                        context.Response.ContentType = "application/json";
+
+                        await context.Response.WriteAsJsonAsync(new
+                        {
+                            status = 401,
+                            message = "Unauthorized",
+                            detail = "Invalid, missing, or expired token."
+                        });
+                    }
                 };
             });
-
-            builder.Services.AddAuthorization();
 
             
             builder.Services.AddRateLimiter(options =>
             {
-                options.AddPolicy("LoginPolicy", context =>
-                    RateLimitPartition.GetFixedWindowLimiter(
-                        "login",
-                        _ => new FixedWindowRateLimiterOptions
-                        {
-                            PermitLimit = 5,
-                            Window = TimeSpan.FromMinutes(1)
-                        }));
+                options.RejectionStatusCode = 429;
 
-                options.AddPolicy("TaskPolicy", context =>
-                    RateLimitPartition.GetFixedWindowLimiter(
-                        "tasks",
-                        _ => new FixedWindowRateLimiterOptions
-                        {
-                            PermitLimit = 10,
-                            Window = TimeSpan.FromMinutes(1)
-                        }));
+                options.OnRejected = async (context, token) =>
+                {
+                    context.HttpContext.Response.ContentType = "application/json";
+
+                    await context.HttpContext.Response.WriteAsJsonAsync(new
+                    {
+                        status = 429,
+                        message = "Too many requests",
+                        endpoint = context.HttpContext.Request.Path.ToString(),
+                        detail = "Please try again later."
+                    }, cancellationToken: token);
+                };
+
+                
+                options.AddFixedWindowLimiter("loginPolicy", opt =>
+                {
+                    opt.PermitLimit = 3;
+                    opt.Window = TimeSpan.FromMinutes(1);
+                    opt.QueueLimit = 0;
+                });
+
+                options.AddFixedWindowLimiter("tasksPolicy", opt =>
+                {
+                    opt.PermitLimit = 10;
+                    opt.Window = TimeSpan.FromMinutes(1);
+                    opt.QueueLimit = 0;
+                });
             });
+
+           
+            builder.Services.AddControllers();
+            builder.Services.AddScoped<JwtService>();
 
             var app = builder.Build();
 
-            app.UseRouting();
+            
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+            }
 
-            app.UseRateLimiter();
+            app.UseHttpsRedirection();
+
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseRateLimiter();
 
             app.MapControllers();
 

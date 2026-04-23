@@ -1,54 +1,73 @@
-@QuizAPIELECT2_HostAddress = http://localhost:5070
+@Web_API_Quiz_HostAddress = https://localhost:7249
+@apiKey = WebAPIKey-1
 
-### LOGIN 
-POST {{QuizAPIELECT2_HostAddress}}/api/auth/login
+
+@adminToken = YOUR_ADMIN_JWT_TOKEN_HERE
+@userToken = YOUR_USER_JWT_TOKEN_HERE
+
+---
+
+### LOGIN ADMIN
+POST {{Web_API_Quiz_HostAddress}}/api/auth/login
 Content-Type: application/json
-X-API-KEY: matteo123
+X-API-KEY: {{apiKey}}
 
 {
   "username": "admin",
-  "password": "12345678"
+  "password": "1234567"
+}
+
+---
+
+### LOGIN 
+POST {{Web_API_Quiz_HostAddress}}/api/auth/login
+Content-Type: application/json
+X-API-KEY: {{apiKey}}
+
+{
+  "username": "user",
+  "password": "user123"
 }
 
 
----
 
-###  GET ALL TASKS 
-GET {{QuizAPIELECT2_HostAddress}}/api/tasks
-Authorization: Bearer {{token}} 
 
----
 
-### GET TASK 
-GET {{QuizAPIELECT2_HostAddress}}/api/tasks/1
-Authorization: Bearer {{token}} YOUR_TOKEN_HERE
+### GET ALL TASKS ADMIN & USER
+GET {{Web_API_Quiz_HostAddress}}/api/tasks
+Authorization: Bearer {{userToken}}
 
----
 
-### CREATE TASK 
-POST {{QuizAPIELECT2_HostAddress}}/api/tasks
-Authorization: Bearer {{token}} YOUR_TOKEN_HERE
+
+### GET TASK IN ID
+GET {{Web_API_Quiz_HostAddress}}/api/tasks/1
+Authorization: Bearer {{userToken}}
+
+
+
+### CREATE TASK ADMIN & USER
+POST {{Web_API_Quiz_HostAddress}}/api/tasks
 Content-Type: application/json
+Authorization: Bearer {{adminToken}}
 
 {
-  "title": "Web API Task",
+  "title": "Sample Task 3",
   "isCompleted": false
 }
 
----
 
-###  UPDATE TASK 
-PUT {{QuizAPIELECT2_HostAddress}}/api/tasks/1
-Authorization: Bearer {{token}}
+
+### UPDATE TASK ADMIN 
+PUT {{Web_API_Quiz_HostAddress}}/api/tasks/1
 Content-Type: application/json
+Authorization: Bearer {{adminToken}}
 
 {
-  "title": "Updated Task",
-  "isCompleted": true
+  "title": "Task 2",
+  "isCompleted": false
 }
 
----
 
-###  DELETE TASK 
-DELETE {{QuizAPIELECT2_HostAddress}}/api/tasks/1
-Authorization: Bearer {{token}}
+### DELETE TASK ADMIN 
+DELETE {{Web_API_Quiz_HostAddress}}/api/tasks/1
+Authorization: Bearer {{adminToken}}
