@@ -1,0 +1,15 @@
+@QuizAPIELECT2_HostAddress = http://localhost:5070
+
+GET {{QuizAPIELECT2_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+GET {{QuizAPIELECT2_HostAddress}}/api/Registration
+Accept: application/json
+
+###
+
+GET {{SampleAPI_HostAddress}}/api/v2/Registration/GetSampleData
+Accept: application/json
+X-API-KEY: MYAPIKEY
+###
