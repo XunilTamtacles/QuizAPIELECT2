@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Threading.RateLimiting;
-using QuizAPIELECT2.Utils;
 using System.Security.Claims;
 
 namespace QuizAPIELECT2
@@ -13,16 +12,13 @@ namespace QuizAPIELECT2
         {
             var builder = WebApplication.CreateBuilder(args);
 
-
             builder.Services.AddControllers();
-            builder.Services.AddOpenApi();
 
-            
+            var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
+
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
-
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = false,
@@ -39,17 +35,15 @@ namespace QuizAPIELECT2
             
             builder.Services.AddRateLimiter(options =>
             {
-                
                 options.AddPolicy("LoginPolicy", context =>
                     RateLimitPartition.GetFixedWindowLimiter(
                         "login",
                         _ => new FixedWindowRateLimiterOptions
                         {
-                            PermitLimit = 3,
+                            PermitLimit = 5,
                             Window = TimeSpan.FromMinutes(1)
                         }));
 
-                
                 options.AddPolicy("TaskPolicy", context =>
                     RateLimitPartition.GetFixedWindowLimiter(
                         "tasks",
@@ -60,21 +54,13 @@ namespace QuizAPIELECT2
                         }));
             });
 
-            
             var app = builder.Build();
 
-            
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-            }
+            app.UseRouting();
 
-            app.UseHttpsRedirection();
-
-            
-            app.UseRateLimiter();     
-            app.UseAuthentication();  
-            app.UseAuthorization();   
+            app.UseRateLimiter();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapControllers();
 

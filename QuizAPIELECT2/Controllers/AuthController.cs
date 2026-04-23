@@ -22,7 +22,6 @@ namespace QuizAPIELECT2.Controllers
         [EnableRateLimiting("LoginPolicy")]
         public IActionResult Login([FromBody] LoginModel loginModel)
         {
-            
             var user = MockData.Users.FirstOrDefault(x =>
                 x.Username.Equals(loginModel.Username, StringComparison.OrdinalIgnoreCase) &&
                 x.Password == loginModel.Password);

@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace QuizAPIELECT2.Utils
 {
@@ -13,73 +10,45 @@ namespace QuizAPIELECT2.Utils
 
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var services = context.HttpContext.RequestServices;
+            var config = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
 
-            var configuration = services.GetRequiredService<IConfiguration>();
-            var logger = services.GetRequiredService<ILogger<ApiKeyAuthorizeAttribute>>();
-
-            
-            if (!context.HttpContext.Request.Headers.TryGetValue(HEADER_NAME, out var extractedApiKey))
+          
+            if (!context.HttpContext.Request.Headers.TryGetValue(HEADER_NAME, out var apiKey))
             {
-                logger.LogWarning("No API key provided. Path: {Path}",
-                    context.HttpContext.Request.Path);
-
-                context.Result = new UnauthorizedObjectResult("API Key was not provided.");
+                context.Result = new UnauthorizedObjectResult("API Key is required.");
                 return;
             }
 
-           
-            var apiKeys = configuration
-                .GetSection("Security:ApiKeys")
-                .Get<List<ApiKeySetting>>();
+            var validKey = config["Security:ApiKey"];
 
-            if (apiKeys == null || !apiKeys.Any())
+            if (string.IsNullOrEmpty(validKey))
             {
-                logger.LogError("API Keys not configured .");
-
-                context.Result = new ObjectResult("Server configuration error.")
+                context.Result = new ObjectResult("Server misconfiguration.")
                 {
                     StatusCode = 500
                 };
                 return;
             }
 
-           
-            var matchedApiKey = apiKeys.FirstOrDefault(apiKey =>
-                string.Equals(apiKey.Value, extractedApiKey.ToString(), StringComparison.OrdinalIgnoreCase));
-
-            if (matchedApiKey == null)
+            
+            if (apiKey.ToString() != validKey)
             {
-                logger.LogWarning("Invalid API key used. Path: {Path}",
-                    context.HttpContext.Request.Path);
-
                 context.Result = new UnauthorizedObjectResult("Invalid API Key.");
                 return;
             }
 
-            
-            var expiresAt = matchedApiKey.CreatedAt.ToUniversalTime()
-                            .AddDays(matchedApiKey.ValidForDays);
+           
+            var expiryDays = int.TryParse(config["Security:ApiKeyExpiryDays"], out var days)
+                ? days
+                : 30;
 
-            if (expiresAt <= DateTime.UtcNow)
+            var createdAt = DateTime.Parse(config["Security:ApiKeyCreatedAt"] ?? DateTime.UtcNow.ToString());
+
+            if (DateTime.UtcNow > createdAt.AddDays(expiryDays))
             {
-                logger.LogWarning("Expired API key used: {KeyName}, Path: {Path}",
-                    matchedApiKey.Name,
-                    context.HttpContext.Request.Path);
-
-                context.Result = new UnauthorizedObjectResult("API Key is expired.");
+                context.Result = new UnauthorizedObjectResult("API Key expired.");
                 return;
             }
-
-           
         }
-    }
-
-    public class ApiKeySetting
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Value { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
-        public int ValidForDays { get; set; }
     }
 }

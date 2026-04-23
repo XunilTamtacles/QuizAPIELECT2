@@ -13,7 +13,7 @@ X-API-KEY: matteo123
 
 ---
 
-###  GET ALL TASKS (User + Admin)
+###  GET ALL TASKS 
 GET {{QuizAPIELECT2_HostAddress}}/api/tasks
 Authorization: Bearer {{token}} 
 
@@ -25,7 +25,7 @@ Authorization: Bearer {{token}} YOUR_TOKEN_HERE
 
 ---
 
-### CREATE TASK (User + Admin)
+### CREATE TASK 
 POST {{QuizAPIELECT2_HostAddress}}/api/tasks
 Authorization: Bearer {{token}} YOUR_TOKEN_HERE
 Content-Type: application/json
@@ -37,7 +37,7 @@ Content-Type: application/json
 
 ---
 
-###  UPDATE TASK (ADMIN ONLY)
+###  UPDATE TASK 
 PUT {{QuizAPIELECT2_HostAddress}}/api/tasks/1
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -49,6 +49,6 @@ Content-Type: application/json
 
 ---
 
-###  DELETE TASK (ADMIN ONLY)
+###  DELETE TASK 
 DELETE {{QuizAPIELECT2_HostAddress}}/api/tasks/1
 Authorization: Bearer {{token}}

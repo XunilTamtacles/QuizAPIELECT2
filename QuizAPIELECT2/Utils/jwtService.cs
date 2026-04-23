@@ -1,42 +1,43 @@
-﻿namespace QuizAPIELECT2.Utils;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-public class jwtService
+namespace QuizAPIELECT2.Utils
+{
+    public class JwtService
     {
         private readonly IConfiguration _configuration;
 
-    public jwtService(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-     
-    public string GenerateToken(string username, string role)
-    {
-        var secretKey = _configuration["Jwt:SecretKey"];
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var claims = new[]
+        public JwtService(IConfiguration configuration)
         {
-            new Claim(ClaimTypes.Name, username),
-            new Claim(ClaimTypes.Role, role),
-            new Claim("role", role),
-            new Claim("username", username)
-        };
+            _configuration = configuration;
+        }
 
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
-            signingCredentials: creds
-        );
+        public string GenerateToken(string username, string role)
+        {
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]);
 
+            var credentials = new SigningCredentials(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256
+            );
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Role, role)
+            };
 
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
     }
- }    
-
+}
