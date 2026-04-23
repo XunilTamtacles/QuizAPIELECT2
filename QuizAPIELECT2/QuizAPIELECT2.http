@@ -14,7 +14,7 @@ X-API-KEY: {{apiKey}}
 
 {
   "username": "admin",
-  "password": "1234567"
+  "password": "admin123"
 }
 
 
@@ -25,7 +25,7 @@ Content-Type: application/json
 X-API-KEY: {{apiKey}}
 
 {
-  "username": "user",
+  "username": "user1",
   "password": "user123"
 }
 
