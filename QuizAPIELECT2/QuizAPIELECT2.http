@@ -1,15 +1,54 @@
 @QuizAPIELECT2_HostAddress = http://localhost:5070
 
-GET {{QuizAPIELECT2_HostAddress}}/weatherforecast/
-Accept: application/json
+### LOGIN 
+POST {{QuizAPIELECT2_HostAddress}}/api/auth/login
+Content-Type: application/json
+X-API-KEY: matteo123
 
-###
-GET {{QuizAPIELECT2_HostAddress}}/api/Registration
-Accept: application/json
+{
+  "username": "admin",
+  "password": "12345678"
+}
 
-###
 
-GET {{SampleAPI_HostAddress}}/api/v2/Registration/GetSampleData
-Accept: application/json
-X-API-KEY: MYAPIKEY
-###
+---
+
+###  GET ALL TASKS (User + Admin)
+GET {{QuizAPIELECT2_HostAddress}}/api/tasks
+Authorization: Bearer {{token}} 
+
+---
+
+### GET TASK 
+GET {{QuizAPIELECT2_HostAddress}}/api/tasks/1
+Authorization: Bearer {{token}} YOUR_TOKEN_HERE
+
+---
+
+### CREATE TASK (User + Admin)
+POST {{QuizAPIELECT2_HostAddress}}/api/tasks
+Authorization: Bearer {{token}} YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "title": "Web API Task",
+  "isCompleted": false
+}
+
+---
+
+###  UPDATE TASK (ADMIN ONLY)
+PUT {{QuizAPIELECT2_HostAddress}}/api/tasks/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Updated Task",
+  "isCompleted": true
+}
+
+---
+
+###  DELETE TASK (ADMIN ONLY)
+DELETE {{QuizAPIELECT2_HostAddress}}/api/tasks/1
+Authorization: Bearer {{token}}
